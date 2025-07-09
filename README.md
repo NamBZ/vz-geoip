@@ -8,6 +8,7 @@ Một API GeoIP đầy đủ tính năng được xây dựng bằng Lumen (Lara
 -   ✅ Nhiều định dạng output: JSON, XML, CSV, YAML
 -   ✅ Hỗ trợ JSONP callback
 -   ✅ Cache để tối ưu hiệu suất
+-   ✅ **Rate Limiting: 100 requests/phút/IP**
 -   ✅ CORS enabled
 -   ✅ Validation IP address
 -   ✅ Error handling chi tiết
@@ -70,6 +71,41 @@ Tất cả endpoints đã được test và hoạt động tốt:
 -   ✅ IPv4 validation
 -   ✅ IPv6 validation
 -   ✅ Error handling
+
+## 🔒 Rate Limiting
+
+API được bảo vệ bởi rate limiting để tránh spam và abuse:
+
+**Giới hạn:** 100 requests/phút/IP address
+
+**Headers trả về:**
+
+-   `X-RateLimit-Limit`: Số requests tối đa cho phép
+-   `X-RateLimit-Remaining`: Số requests còn lại
+-   `X-RateLimit-Reset`: Timestamp khi rate limit được reset
+
+**Khi vượt quá giới hạn:**
+
+-   HTTP Status: `429 Too Many Requests`
+-   Response chứa thông tin chi tiết về rate limit
+-   Header `Retry-After` cho biết thời gian chờ
+
+**Ví dụ response khi rate limit exceeded:**
+
+```json
+{
+    "error": true,
+    "message": "Rate limit exceeded. Too many requests.",
+    "code": 429,
+    "details": {
+        "max_attempts": 100,
+        "current_attempts": 100,
+        "time_window": "1 minute(s)",
+        "retry_after": "60 seconds",
+        "reset_time": "2025-07-09T17:11:53.963369Z"
+    }
+}
+```
 
 ## Official Documentation
 

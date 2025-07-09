@@ -17,6 +17,14 @@ $router->get('/', function () use ($router) {
     return [
         'name' => 'GeoIP API',
         'version' => $router->app->version(),
+        'rate_limiting' => [
+            'limit' => '100 requests per minute per IP address',
+            'headers' => [
+                'X-RateLimit-Limit' => 'Maximum requests allowed',
+                'X-RateLimit-Remaining' => 'Requests remaining in current window',
+                'X-RateLimit-Reset' => 'Unix timestamp when rate limit resets'
+            ]
+        ],
         'endpoints' => [
             'GET /geoip' => 'Get GeoIP information for any IP address',
             'GET /geoip/ipv4' => 'Get GeoIP information for IPv4 address only',
@@ -35,8 +43,8 @@ $router->get('/', function () use ($router) {
     ];
 });
 
-// GeoIP API Routes
-$router->group(['prefix' => 'geoip'], function () use ($router) {
+// GeoIP API Routes with Rate Limiting (100 requests per minute per IP)
+$router->group(['prefix' => 'geoip', 'middleware' => 'throttle:100,1'], function () use ($router) {
     // General GeoIP endpoint (supports both IPv4 and IPv6)
     $router->get('/', 'GeoIPController@getGeoIP');
 
