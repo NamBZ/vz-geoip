@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GeoIP API Demo</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }
+            .container {
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                color: #333;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .form-group {
+                margin-bottom: 20px;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+                color: #555;
+            }
+            input,
+            select {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+            button {
+                background-color: #007bff;
+                color: white;
+                padding: 12px 30px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            .result {
+                margin-top: 30px;
+                padding: 20px;
+                background-color: #f8f9fa;
+                border-radius: 5px;
+                border-left: 4px solid #007bff;
+            }
+            .error {
+                background-color: #f8d7da;
+                border-left: 4px solid #dc3545;
+                color: #721c24;
+            }
+            pre {
+                background-color: #e9ecef;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+            }
+            .buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .endpoint-info {
+                background-color: #e7f3ff;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🌐 GeoIP API Demo</h1>
+
+            <div class="endpoint-info">
+                <h3>Các Endpoint có sẵn:</h3>
+                <ul>
+                    <li>
+                        <strong>GET /geoip</strong> - Tra cứu IP bất kỳ
+                        (IPv4/IPv6)
+                    </li>
+                    <li><strong>GET /geoip/ipv4</strong> - Chỉ IPv4</li>
+                    <li><strong>GET /geoip/ipv6</strong> - Chỉ IPv6</li>
+                </ul>
+            </div>
+
+            <div class="form-group">
+                <label for="ip"
+                    >Địa chỉ IP (để trống để dùng IP của bạn):</label
+                >
+                <input
+                    type="text"
+                    id="ip"
+                    placeholder="Ví dụ: 8.8.8.8 hoặc 2001:4860:4860::8888"
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="format">Định dạng output:</label>
+                <select id="format">
+                    <option value="json">JSON</option>
+                    <option value="xml">XML</option>
+                    <option value="csv">CSV</option>
+                    <option value="yaml">YAML</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="callback">JSONP Callback (chỉ cho JSON):</label>
+                <input
+                    type="text"
+                    id="callback"
+                    placeholder="Ví dụ: myCallback"
+                />
+            </div>
+
+            <div class="buttons">
+                <button onclick="testAPI('/geoip')">Test /geoip</button>
+                <button onclick="testAPI('/geoip/ipv4')">
+                    Test /geoip/ipv4
+                </button>
+                <button onclick="testAPI('/geoip/ipv6')">
+                    Test /geoip/ipv6
+                </button>
+                <button onclick="getCurrentIP()">Lấy IP hiện tại</button>
+            </div>
+
+            <div id="result"></div>
+        </div>
+
+        <script>
+            const API_BASE = "http://localhost:8000";
+
+            function buildURL(endpoint) {
+                const ip = document.getElementById("ip").value;
+                const format = document.getElementById("format").value;
+                const callback = document.getElementById("callback").value;
+
+                let url = `${API_BASE}${endpoint}?`;
+
+                if (ip) url += `ip=${encodeURIComponent(ip)}&`;
+                if (format) url += `format=${format}&`;
+                if (callback && format === "json")
+                    url += `callback=${callback}&`;
+
+                return url.slice(0, -1); // Remove trailing &
+            }
+
+            function showResult(data, isError = false) {
+                const resultDiv = document.getElementById("result");
+                resultDiv.className = isError ? "result error" : "result";
+                resultDiv.innerHTML = `<pre>${data}</pre>`;
+            }
+
+            function testAPI(endpoint) {
+                const url = buildURL(endpoint);
+
+                showResult(`🔄 Đang gọi: ${url}\n\nĐang chờ kết quả...`);
+
+                fetch(url)
+                    .then((response) => response.text())
+                    .then((data) => {
+                        showResult(`✅ URL: ${url}\n\n📡 Response:\n${data}`);
+                    })
+                    .catch((error) => {
+                        showResult(
+                            `❌ Lỗi khi gọi API: ${error.message}`,
+                            true
+                        );
+                    });
+            }
+
+            function getCurrentIP() {
+                showResult("🔄 Đang lấy IP hiện tại...");
+
+                fetch(`${API_BASE}/geoip`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        document.getElementById("ip").value = data.ip;
+                        showResult(
+                            `✅ IP hiện tại của bạn: ${data.ip}\n\nĐã điền vào form!`
+                        );
+                    })
+                    .catch((error) => {
+                        showResult(`❌ Lỗi khi lấy IP: ${error.message}`, true);
+                    });
+            }
+
+            // Test với IP mẫu khi trang load
+            window.onload = function () {
+                document.getElementById("ip").value = "8.8.8.8";
+                testAPI("/geoip");
+            };
+        </script>
+    </body>
+</html>
