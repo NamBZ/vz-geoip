@@ -79,6 +79,7 @@ $app->configure('geoip');
 
 $app->routeMiddleware([
     'throttle' => App\Http\Middleware\RateLimitMiddleware::class,
+    'apikey' => App\Http\Middleware\ApiKeyMiddleware::class,
     //     'auth' => App\Http\Middleware\Authenticate::class,
 ]);
 

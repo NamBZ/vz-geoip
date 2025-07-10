@@ -4,5 +4,6 @@ Homestead.json
 Homestead.yaml
 .env
 .phpunit.result.cache
+/storage/geoip/backup/*
 /storage/geoip/dbip/*.mmdb
 /storage/geoip/maxmind/*.mmdb

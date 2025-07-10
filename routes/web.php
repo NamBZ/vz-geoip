@@ -33,6 +33,7 @@ $router->get('/', function () use ($router) {
             'GET /geoip/health' => 'API health check and basic info',
             'GET /geoip/providers' => 'Get available providers and current provider info',
             'POST /geoip/switch-provider' => 'Switch to a different provider',
+            'POST /geoip/update' => 'Update GeoIP databases (maxmind, dbip, or all)',
         ],
         'parameters' => [
             'ip' => 'IP address to lookup (optional, defaults to client IP)',
@@ -49,8 +50,15 @@ $router->get('/', function () use ($router) {
             '/geoip/health',
             '/geoip/providers',
             '/geoip/switch-provider?provider=dbip',
+            'POST /geoip/update?provider=dbip',
+            'POST /geoip/update?provider=all&force=1&no-backup=1',
         ]
     ];
+});
+
+// Admin redirect
+$router->get('/admin', function () {
+    return redirect('/admin.html');
 });
 
 // GeoIP API Routes with Rate Limiting (100 requests per minute per IP)
@@ -74,4 +82,14 @@ $router->group(['prefix' => 'geoip', 'middleware' => 'throttle:100,1'], function
     $router->get('/providers', 'GeoIPController@getProviders');
     $router->get('/switch-provider', 'GeoIPController@switchProvider');
     $router->post('/switch-provider', 'GeoIPController@switchProvider');
+});
+
+// GeoIP Admin Routes with API Key Protection and Rate Limiting
+$router->group([
+    'prefix' => 'geoip',
+    'middleware' => ['throttle:10,1', 'apikey']
+], function () use ($router) {
+    // Database update endpoint (protected by API key)
+    $router->post('/update', 'GeoIPController@updateDatabase');
+    $router->get('/update', 'GeoIPController@updateDatabase');
 });

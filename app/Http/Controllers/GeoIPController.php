@@ -429,4 +429,107 @@ class GeoIPController extends Controller
         $callback = preg_replace('/[^a-zA-Z0-9_$]/', '', $callback);
         return $callback . '(' . $content . ');';
     }
+
+    /**
+     * Update GeoIP databases via web endpoint
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateDatabase(Request $request)
+    {
+        try {
+            $provider = $request->input('provider', 'all');
+            $force = $request->has('force');
+            $noBackup = $request->has('no-backup');
+
+            // Validate provider
+            $validProviders = ['maxmind', 'dbip', 'all'];
+            if (!in_array($provider, $validProviders)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Invalid provider. Must be one of: " . implode(', ', $validProviders),
+                    'code' => 400
+                ], 400);
+            }
+
+            // Build command arguments
+            $arguments = [
+                'provider' => $provider
+            ];
+
+            $options = [];
+            if ($force) {
+                $options['--force'] = true;
+            }
+            if ($noBackup) {
+                $options['--no-backup'] = true;
+            }
+
+            // Log the update request
+            \Illuminate\Support\Facades\Log::info('Web database update initiated', [
+                'provider' => $provider,
+                'force' => $force,
+                'no_backup' => $noBackup,
+                'user_agent' => $request->userAgent(),
+                'ip' => $request->ip()
+            ]);
+
+            // Execute the artisan command
+            $exitCode = \Illuminate\Support\Facades\Artisan::call('geoip:update', $arguments + $options);
+
+            // Get command output
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            if ($exitCode === 0) {
+                \Illuminate\Support\Facades\Log::info('Web database update completed successfully', [
+                    'provider' => $provider,
+                    'exit_code' => $exitCode
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Database update completed successfully for provider: {$provider}",
+                    'provider' => $provider,
+                    'options' => [
+                        'force' => $force,
+                        'no_backup' => $noBackup
+                    ],
+                    'output' => $output,
+                    'exit_code' => $exitCode,
+                    'timestamp' => \Carbon\Carbon::now()->toISOString()
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Log::error('Web database update failed', [
+                    'provider' => $provider,
+                    'exit_code' => $exitCode,
+                    'output' => $output
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => "Database update failed for provider: {$provider}",
+                    'provider' => $provider,
+                    'output' => $output,
+                    'exit_code' => $exitCode,
+                    'timestamp' => \Carbon\Carbon::now()->toISOString()
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Web database update exception', [
+                'error' => $e->getMessage(),
+                'provider' => $request->input('provider', 'all'),
+                'user_agent' => $request->userAgent(),
+                'ip' => $request->ip(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Database update failed: ' . $e->getMessage(),
+                'code' => 500,
+                'timestamp' => \Carbon\Carbon::now()->toISOString()
+            ], 500);
+        }
+    }
 }
