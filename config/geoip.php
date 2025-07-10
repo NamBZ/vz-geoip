@@ -30,10 +30,6 @@ return [
         ],
     ],
 
-    // Legacy paths for backward compatibility
-    'database_path' => storage_path('geoip/GeoLite2-City.mmdb'),
-    'asn_database_path' => storage_path('geoip/GeoLite2-ASN.mmdb'),
-
     /*
     |--------------------------------------------------------------------------
     | Default Output Format
@@ -64,8 +60,8 @@ return [
     |
     */
     'cache' => [
-        'enabled' => true,
-        'ttl' => 3600, // 1 hour in seconds
+        'enabled' => env('GEOIP_CACHE_ENABLED', true), // Enable or disable caching
+        'ttl' => env('GEOIP_CACHE_TIMEOUT', 3600), // Cache time-to-live in seconds
         'prefix' => 'geoip_',
     ],
 ];

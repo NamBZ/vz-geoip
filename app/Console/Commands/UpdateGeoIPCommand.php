@@ -35,7 +35,8 @@ class UpdateGeoIPCommand extends Command
         'maxmind_license_key' => null,
         'dbip_urls' => [
             'city' => 'https://download.db-ip.com/free/dbip-city-lite-{date}.mmdb.gz',
-            'asn' => 'https://download.db-ip.com/free/dbip-asn-lite-{date}.mmdb.gz'
+            'asn' => 'https://download.db-ip.com/free/dbip-asn-lite-{date}.mmdb.gz',
+            'country' => 'https://download.db-ip.com/free/dbip-country-lite-{date}.mmdb.gz'
         ],
         'maxmind_databases' => ['GeoLite2-City', 'GeoLite2-ASN', 'GeoLite2-Country']
     ];
@@ -180,7 +181,8 @@ class UpdateGeoIPCommand extends Command
 
         $databases = [
             'city' => 'dbip-city-lite.mmdb',
-            'asn' => 'dbip-asn-lite.mmdb'
+            'asn' => 'dbip-asn-lite.mmdb',
+            'country' => 'dbip-country-lite.mmdb'
         ];
 
         foreach ($databases as $type => $filename) {
@@ -353,10 +355,12 @@ class UpdateGeoIPCommand extends Command
         $this->info("🔍 Verifying database files...");
 
         $databases = [
-            'maxmind/GeoLite2-City.mmdb' => 1000000,  // At least 1MB
-            'maxmind/GeoLite2-ASN.mmdb' => 500000,    // At least 500KB
-            'dbip/dbip-city-lite.mmdb' => 100000,     // At least 100KB
-            'dbip/dbip-asn-lite.mmdb' => 50000        // At least 50KB
+            'maxmind/GeoLite2-City.mmdb' => 50000000,  // At least 50MB
+            'maxmind/GeoLite2-ASN.mmdb' => 9000000,    // At least 9MB
+            'maxmind/GeoLite2-Country.mmdb' => 9000000,    // At least 500KB
+            'dbip/dbip-city-lite.mmdb' => 100000000,     // At least 100MB
+            'dbip/dbip-asn-lite.mmdb' => 9000000,        // At least 9MB
+            'dbip/dbip-country-lite.mmdb' => 5000000        // At least 5MB
         ];
 
         foreach ($databases as $db => $minSize) {
