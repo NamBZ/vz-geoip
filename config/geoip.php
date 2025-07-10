@@ -3,13 +3,14 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | GeoIP Database Path
+    | GeoIP Database Paths
     |--------------------------------------------------------------------------
     |
-    | This value is the path to the GeoLite2-City.mmdb database file.
+    | These values are the paths to the GeoLite2 database files.
     |
     */
     'database_path' => storage_path('geoip/GeoLite2-City.mmdb'),
+    'asn_database_path' => storage_path('geoip/GeoLite2-ASN.mmdb'),
 
     /*
     |--------------------------------------------------------------------------

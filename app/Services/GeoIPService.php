@@ -10,6 +10,7 @@ use Exception;
 class GeoIPService
 {
     private $reader;
+    private $asnReader;
     private $cacheEnabled;
     private $cacheTtl;
     private $cachePrefix;
@@ -17,13 +18,19 @@ class GeoIPService
     public function __construct()
     {
         $databasePath = config('geoip.database_path');
+        $asnDatabasePath = config('geoip.asn_database_path');
 
         if (!file_exists($databasePath)) {
             throw new Exception("GeoIP database file not found: {$databasePath}");
         }
 
+        if (!file_exists($asnDatabasePath)) {
+            throw new Exception("ASN database file not found: {$asnDatabasePath}");
+        }
+
         try {
             $this->reader = new Reader($databasePath);
+            $this->asnReader = new Reader($asnDatabasePath);
         } catch (Exception $e) {
             throw new Exception("Invalid GeoIP database: " . $e->getMessage());
         }
@@ -54,6 +61,7 @@ class GeoIPService
 
         try {
             $record = $this->reader->city($ip);
+            $asnData = $this->getASNData($ip);
 
             $data = [
                 'ip' => $ip,
@@ -66,7 +74,10 @@ class GeoIPService
                 'continent_code' => $record->continent->code ?? null,
                 'latitude' => $record->location->latitude ?? null,
                 'longitude' => $record->location->longitude ?? null,
-                'organization' => $this->getOrganization($record),
+                'organization' => $asnData['organization'] ?? $this->getOrganization($record),
+                'asn' => $asnData['asn'] ?? null,
+                'asn_organization' => $asnData['asn_organization'] ?? null,
+                'isp' => $asnData['organization'] ?? null,
                 'timezone' => $record->location->timeZone ?? null,
             ];
 
@@ -113,6 +124,39 @@ class GeoIPService
     public function isIPv6($ip)
     {
         return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
+    }
+
+    /**
+     * Get ASN (Autonomous System Number) information for an IP address
+     *
+     * @param string $ip
+     * @return array
+     */
+    private function getASNData($ip)
+    {
+        try {
+            $asnRecord = $this->asnReader->asn($ip);
+
+            return [
+                'asn' => $asnRecord->autonomousSystemNumber ?? null,
+                'asn_organization' => $asnRecord->autonomousSystemOrganization ?? null,
+                'organization' => $asnRecord->autonomousSystemOrganization ?? null,
+            ];
+        } catch (AddressNotFoundException $e) {
+            // ASN data not found, return null values
+            return [
+                'asn' => null,
+                'asn_organization' => null,
+                'organization' => null,
+            ];
+        } catch (Exception $e) {
+            // Other errors, return null values
+            return [
+                'asn' => null,
+                'asn_organization' => null,
+                'organization' => null,
+            ];
+        }
     }
 
     /**
