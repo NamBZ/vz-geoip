@@ -214,4 +214,55 @@ class GeoIPService
 
         return $this->getGeoData($ip);
     }
+
+    /**
+     * Get database statistics and metadata
+     *
+     * @return array
+     */
+    public function getDatabaseStats()
+    {
+        try {
+            $cityStats = $this->getDatabaseInfo($this->reader, 'GeoLite2-City');
+            $asnStats = $this->getDatabaseInfo($this->asnReader, 'GeoLite2-ASN');
+
+            return [
+                'databases' => [
+                    'city' => $cityStats,
+                    'asn' => $asnStats
+                ],
+                'total_records' => $cityStats['record_count'] + $asnStats['record_count'],
+                'last_updated' => max($cityStats['build_date'], $asnStats['build_date']),
+                'api_version' => '1.0.0',
+                'generated_at' => date('c'),
+            ];
+        } catch (Exception $e) {
+            throw new Exception("Error retrieving database statistics: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get information about a specific database
+     *
+     * @param Reader $reader
+     * @param string $dbName
+     * @return array
+     */
+    private function getDatabaseInfo(Reader $reader, string $dbName)
+    {
+        $metadata = $reader->metadata();
+
+        return [
+            'database_name' => $dbName,
+            'database_type' => $metadata->databaseType ?? 'Unknown',
+            'record_count' => $metadata->nodeCount ?? 0,
+            'build_date' => date('c', $metadata->buildEpoch ?? 0),
+            'description' => $metadata->description['en'] ?? 'No description',
+            'binary_format_major_version' => $metadata->binaryFormatMajorVersion ?? 0,
+            'binary_format_minor_version' => $metadata->binaryFormatMinorVersion ?? 0,
+            'ip_version' => $metadata->ipVersion ?? 0,
+            'node_byte_size' => $metadata->nodeByteSize ?? 0,
+            'search_tree_size' => $metadata->searchTreeSize ?? 0,
+        ];
+    }
 }

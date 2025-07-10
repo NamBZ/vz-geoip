@@ -72,6 +72,70 @@ class GeoIPController extends Controller
     }
 
     /**
+     * Get database statistics and information
+     *
+     * @param Request $request
+     * @return Response
+     */
+    public function getDatabaseStats(Request $request)
+    {
+        try {
+            $stats = $this->geoIPService->getDatabaseStats();
+            return $this->formatResponse($request, $stats);
+        } catch (Exception $e) {
+            return $this->errorResponse($request, $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get API health check and basic info
+     *
+     * @param Request $request
+     * @return Response
+     */
+    public function getHealthCheck(Request $request)
+    {
+        try {
+            $stats = $this->geoIPService->getDatabaseStats();
+
+            $health = [
+                'status' => 'healthy',
+                'api_version' => '1.0.0',
+                'timestamp' => date('c'),
+                'databases' => [
+                    'city_database' => [
+                        'status' => 'online',
+                        'records' => $stats['databases']['city']['record_count'],
+                        'last_updated' => $stats['databases']['city']['build_date']
+                    ],
+                    'asn_database' => [
+                        'status' => 'online',
+                        'records' => $stats['databases']['asn']['record_count'],
+                        'last_updated' => $stats['databases']['asn']['build_date']
+                    ]
+                ],
+                'total_records' => $stats['total_records'],
+                'uptime' => 'Service is operational'
+            ];
+
+            return $this->formatResponse($request, $health);
+        } catch (Exception $e) {
+            $health = [
+                'status' => 'error',
+                'api_version' => '1.0.0',
+                'timestamp' => date('c'),
+                'error' => $e->getMessage(),
+                'databases' => [
+                    'city_database' => ['status' => 'error'],
+                    'asn_database' => ['status' => 'error']
+                ]
+            ];
+
+            return $this->formatResponse($request, $health);
+        }
+    }
+
+    /**
      * Format response based on requested format
      *
      * @param Request $request

@@ -29,6 +29,8 @@ $router->get('/', function () use ($router) {
             'GET /geoip' => 'Get GeoIP information for any IP address',
             'GET /geoip/ipv4' => 'Get GeoIP information for IPv4 address only',
             'GET /geoip/ipv6' => 'Get GeoIP information for IPv6 address only',
+            'GET /geoip/stats' => 'Get database statistics and information',
+            'GET /geoip/health' => 'API health check and basic info',
         ],
         'parameters' => [
             'ip' => 'IP address to lookup (optional, defaults to client IP)',
@@ -39,6 +41,8 @@ $router->get('/', function () use ($router) {
             '/geoip?ip=8.8.8.8',
             '/geoip?ip=8.8.8.8&format=xml',
             '/geoip/ipv4?ip=8.8.8.8&callback=myCallback',
+            '/geoip/stats',
+            '/geoip/health',
         ]
     ];
 });
@@ -53,4 +57,10 @@ $router->group(['prefix' => 'geoip', 'middleware' => 'throttle:100,1'], function
 
     // IPv6 specific endpoint
     $router->get('/ipv6', 'GeoIPController@getGeoIPv6');
+
+    // Database statistics endpoint
+    $router->get('/stats', 'GeoIPController@getDatabaseStats');
+
+    // Health check endpoint
+    $router->get('/health', 'GeoIPController@getHealthCheck');
 });

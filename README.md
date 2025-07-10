@@ -33,7 +33,44 @@ Tra cứu thông tin GeoIP chỉ cho địa chỉ IPv4
 
 Tra cứu thông tin GeoIP chỉ cho địa chỉ IPv6
 
+### 4. GET `/geoip/stats`
+
+Lấy thông tin thống kê và metadata của các database MMDB
+
+**Response bao gồm:**
+
+-   Thông tin chi tiết về GeoLite2-City database
+-   Thông tin chi tiết về GeoLite2-ASN database
+-   Tổng số records trong cả hai database
+-   Ngày cập nhật mới nhất
+-   Metadata và version của database
+
+**Ví dụ:**
+
+```bash
+curl "localhost:8000/geoip/stats"
+```
+
+### 5. GET `/geoip/health`
+
+Health check endpoint để kiểm tra tình trạng API và database
+
+**Response bao gồm:**
+
+-   Trạng thái service (healthy/error)
+-   Thông tin cơ bản về từng database
+-   Tổng số records available
+-   Timestamp hiện tại
+
+**Ví dụ:**
+
+```bash
+curl "localhost:8000/geoip/health"
+```
+
 ## 📄 Response Schema
+
+### GeoIP Lookup Response
 
 ```json
 {
@@ -47,8 +84,37 @@ Tra cứu thông tin GeoIP chỉ cho địa chỉ IPv6
     "continent_code": "NA",
     "latitude": 37.751,
     "longitude": -97.822,
-    "organization": null,
+    "organization": "GOOGLE",
+    "asn": 15169,
+    "asn_organization": "GOOGLE",
+    "isp": "GOOGLE",
     "timezone": "America/Chicago"
+}
+```
+
+### Database Stats Response
+
+```json
+{
+    "databases": {
+        "city": {
+            "database_name": "GeoLite2-City",
+            "database_type": "GeoIP2-City",
+            "record_count": 10850729,
+            "build_date": "2020-09-14T17:00:04+00:00",
+            "description": "GeoIP2 City database"
+        },
+        "asn": {
+            "database_name": "GeoLite2-ASN",
+            "database_type": "GeoLite2-ASN",
+            "record_count": 1383096,
+            "build_date": "2025-07-06T08:15:42+00:00",
+            "description": "GeoLite2 ASN database"
+        }
+    },
+    "total_records": 12233825,
+    "last_updated": "2025-07-06T08:15:42+00:00",
+    "api_version": "1.0.0"
 }
 ```
 
