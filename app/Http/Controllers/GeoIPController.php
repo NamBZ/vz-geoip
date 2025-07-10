@@ -12,9 +12,31 @@ class GeoIPController extends Controller
 {
     private $geoIPService;
 
-    public function __construct(GeoIPService $geoIPService)
+    public function __construct()
     {
-        $this->geoIPService = $geoIPService;
+        // Constructor sẽ khởi tạo service với provider mặc định
+        // Provider có thể được thay đổi động thông qua switchProvider method
+    }
+
+    /**
+     * Get GeoIP service instance with optional provider
+     *
+     * @param Request $request
+     * @return GeoIPService
+     */
+    private function getGeoIPService(Request $request)
+    {
+        $provider = $request->query('provider');
+
+        try {
+            if ($provider) {
+                return new GeoIPService($provider);
+            }
+            return new GeoIPService();
+        } catch (Exception $e) {
+            // If custom provider fails, fallback to default
+            return new GeoIPService();
+        }
     }
 
     /**
@@ -28,7 +50,8 @@ class GeoIPController extends Controller
         $ip = $request->query('ip', $request->ip());
 
         try {
-            $data = $this->geoIPService->getGeoData($ip);
+            $geoIPService = $this->getGeoIPService($request);
+            $data = $geoIPService->getGeoData($ip);
             return $this->formatResponse($request, $data);
         } catch (Exception $e) {
             return $this->errorResponse($request, $e->getMessage(), 400);
@@ -46,7 +69,8 @@ class GeoIPController extends Controller
         $ip = $request->query('ip', $request->ip());
 
         try {
-            $data = $this->geoIPService->getGeoDataIPv4($ip);
+            $geoIPService = $this->getGeoIPService($request);
+            $data = $geoIPService->getGeoDataIPv4($ip);
             return $this->formatResponse($request, $data);
         } catch (Exception $e) {
             return $this->errorResponse($request, $e->getMessage(), 400);
@@ -64,7 +88,8 @@ class GeoIPController extends Controller
         $ip = $request->query('ip', $request->ip());
 
         try {
-            $data = $this->geoIPService->getGeoDataIPv6($ip);
+            $geoIPService = $this->getGeoIPService($request);
+            $data = $geoIPService->getGeoDataIPv6($ip);
             return $this->formatResponse($request, $data);
         } catch (Exception $e) {
             return $this->errorResponse($request, $e->getMessage(), 400);
@@ -80,7 +105,8 @@ class GeoIPController extends Controller
     public function getDatabaseStats(Request $request)
     {
         try {
-            $stats = $this->geoIPService->getDatabaseStats();
+            $geoIPService = $this->getGeoIPService($request);
+            $stats = $geoIPService->getDatabaseStats();
             return $this->formatResponse($request, $stats);
         } catch (Exception $e) {
             return $this->errorResponse($request, $e->getMessage(), 500);
@@ -96,12 +122,14 @@ class GeoIPController extends Controller
     public function getHealthCheck(Request $request)
     {
         try {
-            $stats = $this->geoIPService->getDatabaseStats();
+            $geoIPService = $this->getGeoIPService($request);
+            $stats = $geoIPService->getDatabaseStats();
 
             $health = [
                 'status' => 'healthy',
                 'api_version' => '1.0.0',
                 'timestamp' => date('c'),
+                'provider' => $geoIPService->getProviderInfo(),
                 'databases' => [
                     'city_database' => [
                         'status' => 'online',
@@ -132,6 +160,51 @@ class GeoIPController extends Controller
             ];
 
             return $this->formatResponse($request, $health);
+        }
+    }
+
+    /**
+     * Get provider information
+     *
+     * @param Request $request
+     * @return Response
+     */
+    public function getProviders(Request $request)
+    {
+        try {
+            $geoIPService = $this->getGeoIPService($request);
+            $data = $geoIPService->getProviderInfo();
+            return $this->formatResponse($request, $data);
+        } catch (Exception $e) {
+            return $this->errorResponse($request, $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Switch provider dynamically
+     *
+     * @param Request $request
+     * @return Response
+     */
+    public function switchProvider(Request $request)
+    {
+        $provider = $request->query('provider');
+
+        if (!$provider) {
+            return $this->errorResponse($request, 'Provider parameter is required', 400);
+        }
+
+        try {
+            $geoIPService = $this->getGeoIPService($request);
+            $geoIPService->switchProvider($provider);
+            $data = [
+                'success' => true,
+                'message' => "Provider switched to '{$provider}' successfully",
+                'current_provider' => $geoIPService->getProviderInfo()
+            ];
+            return $this->formatResponse($request, $data);
+        } catch (Exception $e) {
+            return $this->errorResponse($request, $e->getMessage(), 400);
         }
     }
 

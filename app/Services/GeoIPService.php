@@ -14,11 +14,17 @@ class GeoIPService
     private $cacheEnabled;
     private $cacheTtl;
     private $cachePrefix;
+    private $currentProvider;
+    private $providerInfo;
 
-    public function __construct()
+    public function __construct($provider = null)
     {
-        $databasePath = config('geoip.database_path');
-        $asnDatabasePath = config('geoip.asn_database_path');
+        $this->currentProvider = $provider ?? config('geoip.provider', 'maxmind');
+        $this->providerInfo = config('geoip.providers.' . $this->currentProvider, []);
+
+        // Get database paths based on provider
+        $databasePath = $this->getDatabasePath('city_database');
+        $asnDatabasePath = $this->getDatabasePath('asn_database');
 
         if (!file_exists($databasePath)) {
             throw new Exception("GeoIP database file not found: {$databasePath}");
@@ -38,6 +44,78 @@ class GeoIPService
         $this->cacheEnabled = config('geoip.cache.enabled', true);
         $this->cacheTtl = config('geoip.cache.ttl', 3600);
         $this->cachePrefix = config('geoip.cache.prefix', 'geoip_');
+    }
+
+    /**
+     * Get database path based on current provider and database type
+     *
+     * @param string $databaseType (city_database, asn_database, country_database)
+     * @return string
+     * @throws Exception
+     */
+    private function getDatabasePath($databaseType)
+    {
+        if (!$this->providerInfo) {
+            throw new Exception("Provider '{$this->currentProvider}' not found in configuration");
+        }
+
+        if (!isset($this->providerInfo[$databaseType])) {
+            throw new Exception("Database type '{$databaseType}' not configured for provider '{$this->currentProvider}'");
+        }
+
+        return $this->providerInfo[$databaseType];
+    }
+
+    /**
+     * Get current provider information
+     *
+     * @return array
+     */
+    public function getProviderInfo()
+    {
+        return [
+            'current_provider' => $this->currentProvider,
+            'provider_name' => $this->providerInfo['name'] ?? 'Unknown',
+            'provider_website' => $this->providerInfo['website'] ?? null,
+            'available_providers' => array_keys(config('geoip.providers', [])),
+        ];
+    }
+
+    /**
+     * Switch to a different provider
+     *
+     * @param string $provider
+     * @throws Exception
+     */
+    public function switchProvider($provider)
+    {
+        $availableProviders = config('geoip.providers', []);
+
+        if (!isset($availableProviders[$provider])) {
+            throw new Exception("Provider '{$provider}' is not configured");
+        }
+
+        $this->currentProvider = $provider;
+        $this->providerInfo = $availableProviders[$provider];
+
+        // Reinitialize readers with new provider
+        $databasePath = $this->getDatabasePath('city_database');
+        $asnDatabasePath = $this->getDatabasePath('asn_database');
+
+        if (!file_exists($databasePath)) {
+            throw new Exception("GeoIP database file not found: {$databasePath}");
+        }
+
+        if (!file_exists($asnDatabasePath)) {
+            throw new Exception("ASN database file not found: {$asnDatabasePath}");
+        }
+
+        try {
+            $this->reader = new Reader($databasePath);
+            $this->asnReader = new Reader($asnDatabasePath);
+        } catch (Exception $e) {
+            throw new Exception("Invalid GeoIP database: " . $e->getMessage());
+        }
     }
 
     /**
@@ -223,10 +301,11 @@ class GeoIPService
     public function getDatabaseStats()
     {
         try {
-            $cityStats = $this->getDatabaseInfo($this->reader, 'GeoLite2-City');
-            $asnStats = $this->getDatabaseInfo($this->asnReader, 'GeoLite2-ASN');
+            $cityStats = $this->getDatabaseInfo($this->reader, $this->getProviderDatabaseName('city'));
+            $asnStats = $this->getDatabaseInfo($this->asnReader, $this->getProviderDatabaseName('asn'));
 
             return [
+                'provider' => $this->getProviderInfo(),
                 'databases' => [
                     'city' => $cityStats,
                     'asn' => $asnStats
@@ -238,6 +317,23 @@ class GeoIPService
             ];
         } catch (Exception $e) {
             throw new Exception("Error retrieving database statistics: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get provider-specific database name
+     *
+     * @param string $type
+     * @return string
+     */
+    private function getProviderDatabaseName($type)
+    {
+        switch ($this->currentProvider) {
+            case 'dbip':
+                return $type === 'city' ? 'DB-IP City Lite' : 'DB-IP ASN Lite';
+            case 'maxmind':
+            default:
+                return $type === 'city' ? 'GeoLite2-City' : 'GeoLite2-ASN';
         }
     }
 

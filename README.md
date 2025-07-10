@@ -5,6 +5,8 @@ Một API GeoIP đầy đủ tính năng được xây dựng bằng Lumen (Lara
 ## 🌟 Tính năng
 
 -   ✅ Hỗ trợ IPv4 và IPv6
+-   ✅ **Hỗ trợ nhiều nguồn database: MaxMind GeoLite2 và DB-IP Lite**
+-   ✅ **Chuyển đổi provider động thông qua parameter hoặc endpoint**
 -   ✅ Nhiều định dạng output: JSON, XML, CSV, YAML
 -   ✅ Hỗ trợ JSONP callback
 -   ✅ Cache để tối ưu hiệu suất
@@ -12,6 +14,8 @@ Một API GeoIP đầy đủ tính năng được xây dựng bằng Lumen (Lara
 -   ✅ CORS enabled
 -   ✅ Validation IP address
 -   ✅ Error handling chi tiết
+-   ✅ **Endpoint thống kê database và health check**
+-   ✅ **Provider management API**
 
 ## 📡 API Endpoints
 
@@ -24,6 +28,7 @@ Tra cứu thông tin GeoIP cho bất kỳ địa chỉ IP nào (IPv4 hoặc IPv6
 -   `ip` (optional): Địa chỉ IP cần tra cứu. Nếu không có, sẽ dùng IP của client
 -   `format` (optional): Định dạng output (json, xml, csv, yaml). Mặc định: json
 -   `callback` (optional): Tên hàm callback cho JSONP (chỉ áp dụng với JSON)
+-   `provider` (optional): Provider database (maxmind, dbip). Mặc định: maxmind
 
 ### 2. GET `/geoip/ipv4`
 
@@ -59,6 +64,7 @@ Health check endpoint để kiểm tra tình trạng API và database
 
 -   Trạng thái service (healthy/error)
 -   Thông tin cơ bản về từng database
+-   Thông tin provider hiện tại
 -   Tổng số records available
 -   Timestamp hiện tại
 
@@ -66,6 +72,37 @@ Health check endpoint để kiểm tra tình trạng API và database
 
 ```bash
 curl "localhost:8000/geoip/health"
+```
+
+### 6. GET `/geoip/providers`
+
+Lấy thông tin về các provider database có sẵn
+
+**Response bao gồm:**
+
+-   Provider hiện tại đang sử dụng
+-   Tên và website của provider
+-   Danh sách tất cả provider có sẵn
+
+**Ví dụ:**
+
+```bash
+curl "localhost:8000/geoip/providers"
+```
+
+### 7. GET/POST `/geoip/switch-provider`
+
+Chuyển đổi provider database động
+
+**Parameters:**
+
+-   `provider` (required): Provider muốn chuyển sang (maxmind, dbip)
+
+**Ví dụ:**
+
+```bash
+curl "localhost:8000/geoip/switch-provider?provider=dbip"
+curl -X POST "localhost:8000/geoip/switch-provider" -d "provider=maxmind"
 ```
 
 ## 📄 Response Schema
@@ -129,62 +166,70 @@ php -S localhost:8000 -t public
 
 Tất cả endpoints đã được test và hoạt động tốt:
 
+### Basic GeoIP Lookup
+
 -   ✅ JSON format: `curl "localhost:8000/geoip?ip=8.8.8.8"`
 -   ✅ XML format: `curl "localhost:8000/geoip?ip=8.8.8.8&format=xml"`
 -   ✅ CSV format: `curl "localhost:8000/geoip?ip=8.8.8.8&format=csv"`
 -   ✅ YAML format: `curl "localhost:8000/geoip?ip=8.8.8.8&format=yaml"`
 -   ✅ JSONP callback: `curl "localhost:8000/geoip?ip=8.8.8.8&callback=myCallback"`
+
+### Provider Testing
+
+-   ✅ MaxMind provider: `curl "localhost:8000/geoip?ip=8.8.8.8&provider=maxmind"`
+-   ✅ DB-IP provider: `curl "localhost:8000/geoip?ip=8.8.8.8&provider=dbip"`
+-   ✅ Provider info: `curl "localhost:8000/geoip/providers"`
+-   ✅ Switch provider: `curl "localhost:8000/geoip/switch-provider?provider=dbip"`
+
+### Advanced Features
+
 -   ✅ IPv4 validation
 -   ✅ IPv6 validation
+-   ✅ Database stats: `curl "localhost:8000/geoip/stats"`
+-   ✅ Health check: `curl "localhost:8000/geoip/health"`
 -   ✅ Error handling
+-   ✅ Rate limiting
 
-## 🔒 Rate Limiting
+## 🗄️ Database Providers
 
-API được bảo vệ bởi rate limiting để tránh spam và abuse:
+API hỗ trợ hai nguồn database chính:
 
-**Giới hạn:** 100 requests/phút/IP address
+### 1. MaxMind GeoLite2 (mặc định)
 
-**Headers trả về:**
+-   **City Database**: GeoLite2-City.mmdb
+-   **ASN Database**: GeoLite2-ASN.mmdb
+-   **Ưu điểm**: Được cập nhật thường xuyên, độ chính xác cao
+-   **Website**: https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
 
--   `X-RateLimit-Limit`: Số requests tối đa cho phép
--   `X-RateLimit-Remaining`: Số requests còn lại
--   `X-RateLimit-Reset`: Timestamp khi rate limit được reset
+### 2. DB-IP Lite
 
-**Khi vượt quá giới hạn:**
+-   **City Database**: dbip-city-lite.mmdb
+-   **ASN Database**: dbip-asn-lite.mmdb
+-   **Ưu điểm**: Thay thế tốt cho MaxMind, cung cấp thông tin địa lý chính xác
+-   **Website**: https://db-ip.com/db/download/ip-to-city-lite
 
--   HTTP Status: `429 Too Many Requests`
--   Response chứa thông tin chi tiết về rate limit
--   Header `Retry-After` cho biết thời gian chờ
+### Cách sử dụng Provider
 
-**Ví dụ response khi rate limit exceeded:**
+1. **Sử dụng provider mặc định (MaxMind)**:
 
-```json
-{
-    "error": true,
-    "message": "Rate limit exceeded. Too many requests.",
-    "code": 429,
-    "details": {
-        "max_attempts": 100,
-        "current_attempts": 100,
-        "time_window": "1 minute(s)",
-        "retry_after": "60 seconds",
-        "reset_time": "2025-07-09T17:11:53.963369Z"
-    }
-}
-```
+    ```bash
+    curl "localhost:8000/geoip?ip=8.8.8.8"
+    ```
 
-## Official Documentation
+2. **Chỉ định provider trong request**:
 
-Documentation for the framework can be found on the [Lumen website](https://lumen.laravel.com/docs).
+    ```bash
+    curl "localhost:8000/geoip?ip=8.8.8.8&provider=dbip"
+    curl "localhost:8000/geoip?ip=8.8.8.8&provider=maxmind"
+    ```
 
-## Contributing
+3. **Thay đổi provider mặc định**:
 
-Thank you for considering contributing to Lumen! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+    ```bash
+    curl "localhost:8000/geoip/switch-provider?provider=dbip"
+    ```
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+4. **Kiểm tra provider hiện tại**:
+    ```bash
+    curl "localhost:8000/geoip/providers"
+    ```

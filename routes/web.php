@@ -31,18 +31,24 @@ $router->get('/', function () use ($router) {
             'GET /geoip/ipv6' => 'Get GeoIP information for IPv6 address only',
             'GET /geoip/stats' => 'Get database statistics and information',
             'GET /geoip/health' => 'API health check and basic info',
+            'GET /geoip/providers' => 'Get available providers and current provider info',
+            'POST /geoip/switch-provider' => 'Switch to a different provider',
         ],
         'parameters' => [
             'ip' => 'IP address to lookup (optional, defaults to client IP)',
             'format' => 'Output format: json, xml, csv, yaml (optional, defaults to json)',
             'callback' => 'JSONP callback function name (optional, JSON format only)',
+            'provider' => 'Provider to use: maxmind, dbip (optional, can be used per request or globally)',
         ],
         'examples' => [
             '/geoip?ip=8.8.8.8',
             '/geoip?ip=8.8.8.8&format=xml',
+            '/geoip?ip=8.8.8.8&provider=dbip',
             '/geoip/ipv4?ip=8.8.8.8&callback=myCallback',
             '/geoip/stats',
             '/geoip/health',
+            '/geoip/providers',
+            '/geoip/switch-provider?provider=dbip',
         ]
     ];
 });
@@ -63,4 +69,9 @@ $router->group(['prefix' => 'geoip', 'middleware' => 'throttle:100,1'], function
 
     // Health check endpoint
     $router->get('/health', 'GeoIPController@getHealthCheck');
+
+    // Provider management endpoints
+    $router->get('/providers', 'GeoIPController@getProviders');
+    $router->get('/switch-provider', 'GeoIPController@switchProvider');
+    $router->post('/switch-provider', 'GeoIPController@switchProvider');
 });
