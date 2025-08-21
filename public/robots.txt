@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Disallow certain paths
+Disallow: /geoip/
+Disallow: /private/
+Disallow: /temp/
+Disallow: /cgi-bin/
+Disallow: /includes/
+
+# Sitemap location
+Sitemap: /sitemap.xml
