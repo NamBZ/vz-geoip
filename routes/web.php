@@ -13,47 +13,8 @@
 |
 */
 
-$router->get('/', function () use ($router) {
-    return [
-        'name' => 'GeoIP API',
-        'version' => $router->app->version(),
-        'rate_limiting' => [
-            'limit' => '100 requests per minute per IP address',
-            'headers' => [
-                'X-RateLimit-Limit' => 'Maximum requests allowed',
-                'X-RateLimit-Remaining' => 'Requests remaining in current window',
-                'X-RateLimit-Reset' => 'Unix timestamp when rate limit resets'
-            ]
-        ],
-        'endpoints' => [
-            'GET /geoip' => 'Get GeoIP information for any IP address',
-            'GET /geoip/ipv4' => 'Get GeoIP information for IPv4 address only',
-            'GET /geoip/ipv6' => 'Get GeoIP information for IPv6 address only',
-            'GET /geoip/stats' => 'Get database statistics and information',
-            'GET /geoip/health' => 'API health check and basic info',
-            'GET /geoip/providers' => 'Get available providers and current provider info',
-            'POST /geoip/switch-provider' => 'Switch to a different provider',
-            'POST /geoip/update' => 'Update GeoIP databases (maxmind, dbip, or all)',
-        ],
-        'parameters' => [
-            'ip' => 'IP address to lookup (optional, defaults to client IP)',
-            'format' => 'Output format: json, xml, csv, yaml (optional, defaults to json)',
-            'callback' => 'JSONP callback function name (optional, JSON format only)',
-            'provider' => 'Provider to use: maxmind, dbip (optional, can be used per request or globally)',
-        ],
-        'examples' => [
-            '/geoip?ip=8.8.8.8',
-            '/geoip?ip=8.8.8.8&format=xml',
-            '/geoip?ip=8.8.8.8&provider=dbip',
-            '/geoip/ipv4?ip=8.8.8.8&callback=myCallback',
-            '/geoip/stats',
-            '/geoip/health',
-            '/geoip/providers',
-            '/geoip/switch-provider?provider=dbip',
-            'POST /geoip/update?provider=dbip',
-            'POST /geoip/update?provider=all&force=1&no-backup=1',
-        ]
-    ];
+$router->get('/', function () {
+    return response()->file(app()->basePath('public/index.html'));
 });
 
 // Admin redirect

@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Free IP to Geolocation API | GeoIP.Vuiz.Net</title>
+        <meta
+            name="description"
+            content="Free GeoIP REST API supporting IPv4/IPv6, reverse IP lookup with JSON/XML/CSV/YAML responses. Easy integration for PHP, JavaScript, Node.js, Python, Java."
+        />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href="https://geoip.vuiz.net/" />
+
+        <!-- Open Graph -->
+        <meta
+            property="og:title"
+            content="Free IP to Geolocation API | GeoIP.Vuiz.Net"
+        />
+        <meta
+            property="og:description"
+            content="Free GeoIP REST API supporting IPv4/IPv6, reverse IP lookup with JSON/XML/CSV/YAML responses. Easy integration for developers."
+        />
+        <meta property="og:url" content="https://geoip.vuiz.net/" />
+        <meta
+            property="og:image"
+            content="https://geoip.vuiz.net/og-image.png"
+        />
+        <meta property="og:type" content="website" />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+            name="twitter:title"
+            content="Free IP to Geolocation API | GeoIP.Vuiz.Net"
+        />
+        <meta
+            name="twitter:description"
+            content="Free GeoIP REST API supporting IPv4/IPv6, reverse IP lookup with JSON/XML/CSV/YAML responses."
+        />
+        <meta
+            name="twitter:image"
+            content="https://geoip.vuiz.net/og-image.png"
+        />
+
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <!-- JSON-LD Structured Data -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebAPI",
+                "name": "GeoIP.Vuiz.Net Free GeoIP API",
+                "url": "https://geoip.vuiz.net/",
+                "provider": {
+                    "@type": "Organization",
+                    "name": "Vuiz"
+                },
+                "documentation": "https://geoip.vuiz.net/",
+                "audience": "Developers",
+                "offers": "Free",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://geoip.vuiz.net/geoip?ip={ip}&format={format}&provider={provider}&callback={callback}",
+                    "query-input": [
+                        "name=ip description=IP address to lookup",
+                        "name=format description=Response format: json, xml, csv, yaml",
+                        "name=provider description=Data provider: maxmind, dbip",
+                        "name=callback description=JSONP callback function name"
+                    ]
+                }
+            }
+        </script>
+
+        <!-- FAQ JSON-LD -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "Is the API free to use?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Yes, our GeoIP API is completely free with no signup required. Rate limit: 100 requests per minute per IP address."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Do you support IPv6 addresses?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Yes, we fully support both IPv4 and IPv6 addresses with dedicated endpoints and automatic detection."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "What are the rate limits?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "100 requests per minute per IP address. Response headers include X-RateLimit-Limit, X-RateLimit-Remaining, and X-RateLimit-Reset."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "What output formats are supported?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "JSON (default), XML, CSV, and YAML. Use the format parameter to specify: ?format=json|xml|csv|yaml"
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How does reverse IP lookup work?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Pass a hostname instead of an IP address to the /geoip endpoint. The API will resolve the hostname to an IP and return geolocation data."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Do I need an API key?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "No API key required. Simply make HTTP GET requests to our endpoints. No authentication or registration needed."
+                        }
+                    }
+                ]
+            }
+        </script>
+
+        <style>
+            .code-block {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                height: 90%;
+            }
+            .copy-btn {
+                transition: all 0.2s;
+            }
+            .copy-btn:hover {
+                background-color: #3b82f6;
+            }
+            pre code {
+                font-size: 0.875rem;
+                line-height: 1.5;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            pre {
+                overflow-x: auto;
+                max-width: 100%;
+            }
+            .mobile-menu {
+                display: none;
+            }
+            .mobile-menu.active {
+                display: block;
+            }
+            .animate-spin {
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-white text-gray-900">
+        <!-- Sticky Header -->
+        <header class="sticky top-0 bg-white border-b border-gray-200 z-50">
+            <nav
+                class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+                aria-label="Main navigation"
+            >
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-blue-600">
+                            GeoIP.Vuiz.Net
+                        </h1>
+                    </div>
+                    <div class="hidden lg:block">
+                        <div class="ml-10 flex items-baseline space-x-8">
+                            <a
+                                href="#features"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                                >Features</a
+                            >
+                            <a
+                                href="#docs"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                                >API Docs</a
+                            >
+                            <a
+                                href="#examples"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                                >Examples</a
+                            >
+                            <a
+                                href="#pricing"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                                >Pricing</a
+                            >
+                            <a
+                                href="#faq"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                                >FAQ</a
+                            >
+                            <a
+                                href="#contact"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                                >Contact</a
+                            >
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a
+                            href="#demo"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                        >
+                            Use for Free
+                        </a>
+                        <!-- Mobile menu button -->
+                        <button
+                            id="mobile-menu-button"
+                            class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                            aria-controls="mobile-menu"
+                            aria-expanded="false"
+                        >
+                            <span class="sr-only">Open main menu</span>
+                            <!-- Hamburger icon -->
+                            <svg
+                                class="block h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                            </svg>
+                            <!-- Close icon (hidden by default) -->
+                            <svg
+                                class="hidden h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile menu -->
+                <div class="mobile-menu md:hidden" id="mobile-menu">
+                    <div
+                        class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200"
+                    >
+                        <a
+                            href="#features"
+                            class="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                            >Features</a
+                        >
+                        <a
+                            href="#docs"
+                            class="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                            >API Docs</a
+                        >
+                        <a
+                            href="#examples"
+                            class="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                            >Examples</a
+                        >
+                        <a
+                            href="#pricing"
+                            class="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                            >Pricing</a
+                        >
+                        <a
+                            href="#faq"
+                            class="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                            >FAQ</a
+                        >
+                        <a
+                            href="#contact"
+                            class="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium"
+                            >Contact</a
+                        >
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Free IP to Geolocation REST API
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    Fast, reliable geolocation data for IPv4 & IPv6 addresses.
+                    Support for JSON, XML, CSV, YAML responses with reverse IP
+                    lookup. No API key required.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a
+                        href="#demo"
+                        class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
+                    >
+                        Try Now
+                    </a>
+                    <a
+                        href="#docs"
+                        class="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50 transition"
+                    >
+                        View Docs
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features/Badges Section -->
+        <section id="features" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                    <div
+                        class="text-center p-6 rounded-lg border border-gray-200"
+                    >
+                        <div class="text-2xl mb-4">🌐</div>
+                        <h3 class="text-lg font-semibold mb-2">
+                            IPv4 & IPv6 Support
+                        </h3>
+                        <p class="text-gray-600">
+                            Full support for both IPv4 and IPv6 addresses with
+                            dedicated endpoints
+                        </p>
+                    </div>
+                    <div
+                        class="text-center p-6 rounded-lg border border-gray-200"
+                    >
+                        <div class="text-2xl mb-4">📄</div>
+                        <h3 class="text-lg font-semibold mb-2">
+                            Multiple Formats
+                        </h3>
+                        <p class="text-gray-600">
+                            JSON, XML, CSV, and YAML response formats for
+                            maximum compatibility
+                        </p>
+                    </div>
+                    <div
+                        class="text-center p-6 rounded-lg border border-gray-200"
+                    >
+                        <div class="text-2xl mb-4">🔍</div>
+                        <h3 class="text-lg font-semibold mb-2">
+                            Reverse IP Lookup
+                        </h3>
+                        <p class="text-gray-600">
+                            Resolve hostnames to IP addresses and get
+                            geolocation data
+                        </p>
+                    </div>
+                    <div
+                        class="text-center p-6 rounded-lg border border-gray-200"
+                    >
+                        <div class="text-2xl mb-4">⚡</div>
+                        <h3 class="text-lg font-semibold mb-2">
+                            Easy Integration
+                        </h3>
+                        <p class="text-gray-600">
+                            Works with PHP, JavaScript, Node.js, Python, Java,
+                            and more
+                        </p>
+                    </div>
+                    <div
+                        class="text-center p-6 rounded-lg border border-gray-200"
+                    >
+                        <div class="text-2xl mb-4">🚀</div>
+                        <h3 class="text-lg font-semibold mb-2">
+                            Fast & Reliable
+                        </h3>
+                        <p class="text-gray-600">
+                            High-performance API with multiple data providers
+                        </p>
+                    </div>
+                    <div
+                        class="text-center p-6 rounded-lg border border-gray-200"
+                    >
+                        <div class="text-2xl mb-4">💰</div>
+                        <h3 class="text-lg font-semibold mb-2">Free to Use</h3>
+                        <p class="text-gray-600">
+                            No signup required, 100 requests per minute per IP
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        How It Works
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Simple REST API calls return comprehensive geolocation
+                        data
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">
+                            Sample JSON Response
+                        </h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('json-sample')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre id="json-sample"><code>{
+  "ip": "8.8.8.8",
+  "continent": "North America",
+  "country": "United States",
+  "countryCode": "US",
+  "region": "California",
+  "city": "Mountain View",
+  "lat": 37.4056,
+  "lon": -122.0775,
+  "timezone": "America/Los_Angeles",
+  "isp": "Google LLC",
+  "org": "Google Public DNS",
+  "as": "AS15169 Google LLC"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">
+                            Sample XML Response
+                        </h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('xml-sample')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre id="xml-sample"><code>&lt;geoip&gt;
+  &lt;ip&gt;8.8.8.8&lt;/ip&gt;
+  &lt;continent&gt;North America&lt;/continent&gt;
+  &lt;country&gt;United States&lt;/country&gt;
+  &lt;countryCode&gt;US&lt;/countryCode&gt;
+  &lt;region&gt;California&lt;/region&gt;
+  &lt;city&gt;Mountain View&lt;/city&gt;
+  &lt;lat&gt;37.4056&lt;/lat&gt;
+  &lt;lon&gt;-122.0775&lt;/lon&gt;
+  &lt;timezone&gt;America/Los_Angeles&lt;/timezone&gt;
+  &lt;isp&gt;Google LLC&lt;/isp&gt;
+&lt;/geoip&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Database Statistics -->
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        Database Statistics
+                    </h2>
+                    <p class="text-xl text-gray-600 mb-4">
+                        Real-time database status and record counts
+                    </p>
+                    <button
+                        onclick="refreshDatabaseStats()"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                        <svg
+                            class="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            ></path>
+                        </svg>
+                        Refresh Stats
+                    </button>
+                </div>
+
+                <div id="db-stats-container" class="space-y-8">
+                    <div class="text-center text-gray-500">
+                        <div
+                            class="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full"
+                            role="status"
+                            aria-label="Loading"
+                        ></div>
+                        <p class="mt-2">Loading database statistics...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Endpoints Documentation -->
+        <section id="docs" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        API Endpoints
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Complete REST API reference
+                    </p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-300">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Method
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Endpoint
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Description
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Parameters
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Example
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                                >
+                                    GET
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    Get GeoIP for any IP address
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    ip, format, provider, callback
+                                </td>
+                                <td class="px-6 py-4 text-sm text-blue-600">
+                                    <a
+                                        href="https://geoip.vuiz.net/geoip?ip=8.8.8.8"
+                                        target="_blank"
+                                        class="hover:underline"
+                                        >/geoip?ip=8.8.8.8</a
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                                >
+                                    GET
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip/ipv4
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    IPv4 addresses only
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    ip, format, provider, callback
+                                </td>
+                                <td class="px-6 py-4 text-sm text-blue-600">
+                                    <a
+                                        href="https://geoip.vuiz.net/geoip/ipv4?ip=8.8.8.8&callback=myCallback"
+                                        target="_blank"
+                                        class="hover:underline"
+                                        >/geoip/ipv4?ip=8.8.8.8&callback=myCallback</a
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                                >
+                                    GET
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip/ipv6
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    IPv6 addresses only
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    ip, format, provider, callback
+                                </td>
+                                <td class="px-6 py-4 text-sm text-blue-600">
+                                    <a
+                                        href="https://geoip.vuiz.net/geoip/ipv6?ip=2001:4860:4860::8888"
+                                        target="_blank"
+                                        class="hover:underline"
+                                        >/geoip/ipv6?ip=2001:4860:4860::8888</a
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                                >
+                                    GET
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip/stats
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    Database statistics
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    provider
+                                </td>
+                                <td class="px-6 py-4 text-sm text-blue-600">
+                                    <a
+                                        href="https://geoip.vuiz.net/geoip/stats"
+                                        target="_blank"
+                                        class="hover:underline"
+                                        >/geoip/stats</a
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                                >
+                                    GET
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip/health
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    API health check
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    provider
+                                </td>
+                                <td class="px-6 py-4 text-sm text-blue-600">
+                                    <a
+                                        href="https://geoip.vuiz.net/geoip/health"
+                                        target="_blank"
+                                        class="hover:underline"
+                                        >/geoip/health</a
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                                >
+                                    GET
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip/providers
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    Available providers
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    -
+                                </td>
+                                <td class="px-6 py-4 text-sm text-blue-600">
+                                    <a
+                                        href="https://geoip.vuiz.net/geoip/providers"
+                                        target="_blank"
+                                        class="hover:underline"
+                                        >/geoip/providers</a
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600"
+                                >
+                                    POST
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip/switch-provider
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    Switch data provider
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    provider (maxmind|dbip)
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    POST /geoip/switch-provider?provider=dbip
+                                </td>
+                            </tr>
+                            <tr>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600"
+                                >
+                                    POST
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                >
+                                    /geoip/update
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    Update databases
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    provider, force, no-backup
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    POST /geoip/update?provider=all&force=1
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div
+                    class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6"
+                >
+                    <h3 class="text-lg font-semibold text-yellow-800 mb-2">
+                        Rate Limiting
+                    </h3>
+                    <p class="text-yellow-700 mb-2">
+                        100 requests per minute per IP address. Response headers
+                        include:
+                    </p>
+                    <ul class="list-disc list-inside text-yellow-700 space-y-1">
+                        <li>
+                            <code class="bg-yellow-100 px-2 py-1 rounded"
+                                >X-RateLimit-Limit</code
+                            >: Maximum requests allowed
+                        </li>
+                        <li>
+                            <code class="bg-yellow-100 px-2 py-1 rounded"
+                                >X-RateLimit-Remaining</code
+                            >: Requests remaining in current window
+                        </li>
+                        <li>
+                            <code class="bg-yellow-100 px-2 py-1 rounded"
+                                >X-RateLimit-Reset</code
+                            >: Unix timestamp when rate limit resets
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                    class="mt-8 bg-red-50 border border-red-200 rounded-lg p-6"
+                >
+                    <h3 class="text-lg font-semibold text-red-800 mb-2">
+                        Common HTTP Status Codes
+                    </h3>
+                    <ul class="list-disc list-inside text-red-700 space-y-1">
+                        <li><strong>200</strong>: Success</li>
+                        <li>
+                            <strong>400</strong>: Bad Request (invalid IP
+                            address)
+                        </li>
+                        <li><strong>404</strong>: Not Found</li>
+                        <li>
+                            <strong>429</strong>: Too Many Requests (rate
+                            limited)
+                        </li>
+                        <li><strong>500</strong>: Internal Server Error</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Demo -->
+        <section id="demo" class="py-16 bg-gray-50">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        Try It Now
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Test the API with live requests
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label
+                                for="demo-ip"
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                                >IP Address or Hostname</label
+                            >
+                            <input
+                                type="text"
+                                id="demo-ip"
+                                placeholder="e.g., 8.8.8.8 or example.com"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <p class="text-xs text-gray-500 mt-1">
+                                Leave empty to use your current IP
+                            </p>
+                        </div>
+
+                        <div>
+                            <label
+                                for="demo-format"
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                                >Output Format</label
+                            >
+                            <select
+                                id="demo-format"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="json">JSON</option>
+                                <option value="xml">XML</option>
+                                <option value="csv">CSV</option>
+                                <option value="yaml">YAML</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label
+                                for="demo-provider"
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                                >Provider</label
+                            >
+                            <select
+                                id="demo-provider"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Default</option>
+                                <option value="maxmind">MaxMind</option>
+                                <option value="dbip">DB-IP</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label
+                                for="demo-callback"
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                                >JSONP Callback</label
+                            >
+                            <input
+                                type="text"
+                                id="demo-callback"
+                                placeholder="myCallback"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                            />
+                            <p class="text-xs text-gray-500 mt-1">
+                                Only for JSON format
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-sm text-gray-600"
+                                >Quick test:</span
+                            >
+                            <button
+                                onclick="setDemoIP('8.8.8.8')"
+                                class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                            >
+                                8.8.8.8
+                            </button>
+                            <button
+                                onclick="setDemoIP('1.1.1.1')"
+                                class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                            >
+                                1.1.1.1
+                            </button>
+                            <button
+                                onclick="setDemoIP('example.com')"
+                                class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                            >
+                                example.com
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-6">
+                        <button
+                            onclick="testAPI()"
+                            class="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
+                        >
+                            Lookup
+                        </button>
+                    </div>
+
+                    <div id="demo-result" class="hidden">
+                        <h3 class="text-lg font-semibold mb-2">Result</h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('demo-output')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre id="demo-output" class="overflow-x-auto"></pre>
+                        </div>
+                        <div
+                            id="demo-url"
+                            class="mt-2 text-sm text-gray-600"
+                        ></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integration Examples -->
+        <section id="examples" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        Integration Examples
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Ready-to-use code snippets for popular languages
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- cURL -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">cURL</h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('curl-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre
+                                id="curl-example"
+                            ><code>curl -s "https://geoip.vuiz.net/geoip?ip=8.8.8.8" | jq</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- JavaScript -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">
+                            JavaScript (Browser)
+                        </h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('js-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre
+                                id="js-example"
+                            ><code>fetch('https://geoip.vuiz.net/geoip?ip=8.8.8.8')
+  .then(r => r.json())
+  .then(d => console.log(d.country, d.city));</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Node.js -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">Node.js</h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('node-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre
+                                id="node-example"
+                            ><code>const r = await fetch('https://geoip.vuiz.net/geoip?ip=8.8.8.8');
+console.log(await r.json());</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Python -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">Python</h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('python-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre id="python-example"><code>import requests
+
+r = requests.get('https://geoip.vuiz.net/geoip', 
+                 params={'ip': '8.8.8.8'})
+print(r.json())</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- PHP -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">PHP</h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('php-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre id="php-example"><code>&lt;?php
+$ch = curl_init('https://geoip.vuiz.net/geoip?ip=8.8.8.8');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+echo curl_exec($ch);
+?&gt;</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Java -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">Java</h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('java-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre
+                                id="java-example"
+                            ><code>var client = java.net.http.HttpClient.newHttpClient();
+var request = java.net.http.HttpRequest.newBuilder(
+    java.net.URI.create("https://geoip.vuiz.net/geoip?ip=8.8.8.8"))
+    .build();
+var response = client.send(request, 
+    java.net.http.HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- JSONP -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">
+                            JSONP (Browser)
+                        </h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('jsonp-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre id="jsonp-example"><code>&lt;script&gt;
+function myCallback(data) {
+  console.log(data);
+}
+&lt;/script&gt;
+&lt;script src="https://geoip.vuiz.net/geoip?ip=8.8.8.8&amp;callback=myCallback"&gt;&lt;/script&gt;</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- XML/CSV/YAML -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">
+                            Other Formats
+                        </h3>
+                        <div class="code-block rounded-lg p-4 relative">
+                            <button
+                                onclick="copyToClipboard('formats-example')"
+                                class="copy-btn absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                Copy
+                            </button>
+                            <pre id="formats-example"><code># XML format
+curl "https://geoip.vuiz.net/geoip?ip=8.8.8.8&format=xml"
+
+# CSV format  
+curl "https://geoip.vuiz.net/geoip?ip=8.8.8.8&format=csv"
+
+# YAML format
+curl "https://geoip.vuiz.net/geoip?ip=8.8.8.8&format=yaml"</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases -->
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        Use Cases
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Common applications for IP geolocation
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Content personalization by location</span
+                            >
+                        </li>
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Traffic analytics & fraud detection hints</span
+                            >
+                        </li>
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Regional routing & compliance</span
+                            >
+                        </li>
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Language/currency suggestions</span
+                            >
+                        </li>
+                    </ul>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Security monitoring & access control</span
+                            >
+                        </li>
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Geotargeted advertising</span
+                            >
+                        </li>
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Load balancing & CDN routing</span
+                            >
+                        </li>
+                        <li class="flex items-start">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-0.5"
+                                >✓</span
+                            >
+                            <span class="ml-3 text-gray-700"
+                                >Market research & analytics</span
+                            >
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing -->
+        <section id="pricing" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        Simple Pricing
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Start free, scale as needed
+                    </p>
+                </div>
+
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+                >
+                    <div
+                        class="border border-gray-200 rounded-lg p-8 bg-blue-50 border-blue-200"
+                    >
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                            Free Tier
+                        </h3>
+                        <div class="text-4xl font-bold text-blue-600 mb-4">
+                            $0
+                        </div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>No signup required</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>100 requests per minute per IP</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>Fair-use policy</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>Rate limit headers included</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>All formats supported</span>
+                            </li>
+                        </ul>
+                        <a
+                            href="#demo"
+                            class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+                        >
+                            Start Free
+                        </a>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-lg p-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                            Enterprise
+                        </h3>
+                        <div class="text-4xl font-bold text-gray-900 mb-4">
+                            Custom
+                        </div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>Higher rate limits</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>SLA guarantees</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>Dedicated support</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>Custom integrations</span>
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <span>On-premise deployment</span>
+                            </li>
+                        </ul>
+                        <a
+                            href="mailto:admin@vuiz.net"
+                            class="block w-full bg-gray-900 text-white text-center py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+                        >
+                            Contact Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="py-16 bg-gray-50">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                        Frequently Asked Questions
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Everything you need to know about our API
+                    </p>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            Is the API free to use?
+                        </h3>
+                        <p class="text-gray-600">
+                            Yes, our GeoIP API is completely free with no signup
+                            required. Rate limit: 100 requests per minute per IP
+                            address with fair-use policy.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            Do you support IPv6 addresses?
+                        </h3>
+                        <p class="text-gray-600">
+                            Yes, we fully support both IPv4 and IPv6 addresses.
+                            Use the general <code>/geoip</code> endpoint for
+                            automatic detection, or specific
+                            <code>/geoip/ipv4</code> and
+                            <code>/geoip/ipv6</code> endpoints.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            What are the rate limits and how do headers work?
+                        </h3>
+                        <p class="text-gray-600">
+                            100 requests per minute per IP address. Every
+                            response includes headers:
+                            <code>X-RateLimit-Limit</code> (max requests),
+                            <code>X-RateLimit-Remaining</code> (requests left),
+                            and <code>X-RateLimit-Reset</code> (Unix timestamp
+                            when limit resets).
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            What output formats are supported?
+                        </h3>
+                        <p class="text-gray-600">
+                            JSON (default), XML, CSV, and YAML. Use the
+                            <code>format</code> parameter:
+                            <code>?format=json|xml|csv|yaml</code>. JSONP is
+                            supported for JSON format with the
+                            <code>callback</code> parameter.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            How does reverse IP/hostname lookup work?
+                        </h3>
+                        <p class="text-gray-600">
+                            Pass a hostname instead of an IP address to the
+                            <code>/geoip</code> endpoint. The API will resolve
+                            the hostname to an IP address and return geolocation
+                            data for the resolved IP.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            Do I need an API key or authentication?
+                        </h3>
+                        <p class="text-gray-600">
+                            No API key required. Simply make HTTP GET requests
+                            to our endpoints. No authentication or registration
+                            needed to start using the service.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            Can I use this in commercial projects?
+                        </h3>
+                        <p class="text-gray-600">
+                            Yes, you can use our API in commercial projects
+                            under our fair-use policy. For higher volumes or SLA
+                            requirements, please contact us for enterprise
+                            options.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                            What providers are available and how to switch?
+                        </h3>
+                        <p class="text-gray-600">
+                            We support MaxMind and DB-IP providers. Check
+                            available providers with
+                            <code>GET /geoip/providers</code>. Switch providers
+                            using
+                            <code
+                                >POST
+                                /geoip/switch-provider?provider=maxmind|dbip</code
+                            >
+                            or use the <code>provider</code> parameter for
+                            per-request selection.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="py-16 bg-blue-600">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-bold text-white mb-4">
+                    Ready to Get Started?
+                </h2>
+                <p class="text-xl text-blue-100 mb-8">
+                    Start using our free GeoIP API in seconds. No registration
+                    required.
+                </p>
+                <a
+                    href="#demo"
+                    class="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition"
+                >
+                    Start Free — No API Key
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer id="contact" class="bg-gray-900 text-gray-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div class="col-span-1 md:col-span-2">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            GeoIP.Vuiz.Net
+                        </h3>
+                        <p class="text-gray-400 mb-4">
+                            Free IP to geolocation REST API supporting IPv4/IPv6
+                            with multiple output formats.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-white mb-4">
+                            Resources
+                        </h4>
+                        <ul class="space-y-2">
+                            <li>
+                                <a
+                                    href="#docs"
+                                    class="text-gray-400 hover:text-white"
+                                    >API Documentation</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="#examples"
+                                    class="text-gray-400 hover:text-white"
+                                    >Code Examples</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="https://geoip.vuiz.net/geoip/health"
+                                    class="text-gray-400 hover:text-white"
+                                    >API Status</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="#"
+                                    class="text-gray-400 hover:text-white"
+                                    >Privacy Policy</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-white mb-4">
+                            Contact
+                        </h4>
+                        <ul class="space-y-2">
+                            <li>
+                                <a
+                                    href="mailto:admin@vuiz.net"
+                                    class="text-gray-400 hover:text-white"
+                                    >admin@vuiz.net</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="https://vuiz.net/terms-conditions"
+                                    class="text-gray-400 hover:text-white"
+                                    >Terms of Service</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="https://github.com/NamBZ/vz-geoip/"
+                                    class="text-gray-400 hover:text-white"
+                                    >GitHub</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                    <p class="text-gray-400">
+                        © 2024 Vuiz. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            // Format toggle for JSONP callback
+            document
+                .getElementById("demo-format")
+                .addEventListener("change", function () {
+                    const callback = document.getElementById("demo-callback");
+                    if (this.value === "json") {
+                        callback.disabled = false;
+                        callback.classList.remove("disabled:bg-gray-100");
+                    } else {
+                        callback.disabled = true;
+                        callback.classList.add("disabled:bg-gray-100");
+                        callback.value = "";
+                    }
+                });
+
+            // Set demo IP helper
+            function setDemoIP(ip) {
+                document.getElementById("demo-ip").value = ip;
+            }
+
+            // Test API function
+            async function testAPI() {
+                const ip = document.getElementById("demo-ip").value.trim();
+                const format = document.getElementById("demo-format").value;
+                const provider = document.getElementById("demo-provider").value;
+                const callback = document
+                    .getElementById("demo-callback")
+                    .value.trim();
+
+                let url = "https://geoip.vuiz.net/geoip";
+                const params = new URLSearchParams();
+
+                if (ip) params.append("ip", ip);
+                if (format) params.append("format", format);
+                if (provider) params.append("provider", provider);
+                if (callback && format === "json")
+                    params.append("callback", callback);
+
+                if (params.toString()) {
+                    url += "?" + params.toString();
+                }
+
+                const resultDiv = document.getElementById("demo-result");
+                const outputDiv = document.getElementById("demo-output");
+                const urlDiv = document.getElementById("demo-url");
+
+                resultDiv.classList.remove("hidden");
+                outputDiv.textContent = "Loading...";
+                urlDiv.textContent = `Request URL: ${url}`;
+
+                try {
+                    const response = await fetch(url);
+                    const headers = response.headers;
+
+                    let result = "";
+                    if (format === "json" || !format) {
+                        const data = await response.json();
+                        result = JSON.stringify(data, null, 2);
+                    } else {
+                        result = await response.text();
+                    }
+
+                    // Add rate limit info if available
+                    if (headers.get("X-RateLimit-Limit")) {
+                        result = `Rate Limit Info:
+X-RateLimit-Limit: ${headers.get("X-RateLimit-Limit")}
+X-RateLimit-Remaining: ${headers.get("X-RateLimit-Remaining")}
+X-RateLimit-Reset: ${headers.get("X-RateLimit-Reset")}
+
+Response:
+${result}`;
+                    }
+
+                    outputDiv.textContent = result;
+                } catch (error) {
+                    outputDiv.textContent = `Error: ${error.message}`;
+                    outputDiv.parentElement.classList.add(
+                        "border-red-300",
+                        "bg-red-50"
+                    );
+                }
+            }
+
+            // Copy to clipboard function
+            function copyToClipboard(elementId) {
+                const element = document.getElementById(elementId);
+                const text = element.textContent;
+
+                navigator.clipboard
+                    .writeText(text)
+                    .then(() => {
+                        // Show feedback
+                        const button =
+                            element.parentElement.querySelector(".copy-btn");
+                        const originalText = button.textContent;
+                        button.textContent = "Copied!";
+                        button.classList.add("bg-green-500");
+
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            button.classList.remove("bg-green-500");
+                        }, 1000);
+                    })
+                    .catch((err) => {
+                        console.error("Failed to copy: ", err);
+                    });
+            }
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+                anchor.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(
+                        this.getAttribute("href")
+                    );
+                    if (target) {
+                        // Calculate offset for sticky header (header height + some padding)
+                        const headerHeight =
+                            document.querySelector("header").offsetHeight;
+                        const targetPosition =
+                            target.offsetTop - headerHeight - 20; // 20px extra padding
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: "smooth",
+                        });
+                    }
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById("mobile-menu");
+                    const menuButton =
+                        document.getElementById("mobile-menu-button");
+                    if (mobileMenu.classList.contains("active")) {
+                        mobileMenu.classList.remove("active");
+                        menuButton.setAttribute("aria-expanded", "false");
+                        const hamburger =
+                            menuButton.querySelector("svg:first-child");
+                        const close =
+                            menuButton.querySelector("svg:last-child");
+                        hamburger.classList.remove("hidden");
+                        close.classList.add("hidden");
+                    }
+                });
+            });
+
+            // Mobile menu toggle
+            document.addEventListener("DOMContentLoaded", function () {
+                const mobileMenuButton =
+                    document.getElementById("mobile-menu-button");
+                const mobileMenu = document.getElementById("mobile-menu");
+                const hamburger =
+                    mobileMenuButton.querySelector("svg:first-child");
+                const closeIcon =
+                    mobileMenuButton.querySelector("svg:last-child");
+
+                mobileMenuButton.addEventListener("click", function () {
+                    const isExpanded = mobileMenu.classList.contains("active");
+
+                    if (isExpanded) {
+                        mobileMenu.classList.remove("active");
+                        mobileMenuButton.setAttribute("aria-expanded", "false");
+                        hamburger.classList.remove("hidden");
+                        closeIcon.classList.add("hidden");
+                    } else {
+                        mobileMenu.classList.add("active");
+                        mobileMenuButton.setAttribute("aria-expanded", "true");
+                        hamburger.classList.add("hidden");
+                        closeIcon.classList.remove("hidden");
+                    }
+                });
+
+                // Initialize demo with example IP
+                setDemoIP("8.8.8.8");
+
+                // Load database statistics
+                loadDatabaseStats();
+            });
+
+            // Database Statistics Functions
+            async function loadDatabaseStats() {
+                try {
+                    // First, get available providers
+                    const providersResponse = await fetch(
+                        "https://geoip.vuiz.net/geoip/providers"
+                    );
+                    const providersData = await providersResponse.json();
+
+                    const container =
+                        document.getElementById("db-stats-container");
+
+                    if (!providersData.available_providers) {
+                        container.innerHTML =
+                            '<div class="text-center text-red-500">Failed to load provider information</div>';
+                        return;
+                    }
+
+                    container.innerHTML = ""; // Clear loading state
+
+                    // Load stats for each provider
+                    for (const provider of providersData.available_providers) {
+                        try {
+                            const statsResponse = await fetch(
+                                `https://geoip.vuiz.net/geoip/stats?provider=${provider}`
+                            );
+                            const statsData = await statsResponse.json();
+
+                            const providerCard = createProviderStatsCard(
+                                statsData,
+                                provider === providersData.current_provider
+                            );
+                            container.appendChild(providerCard);
+                        } catch (error) {
+                            console.error(
+                                `Error loading stats for ${provider}:`,
+                                error
+                            );
+                            const errorCard = createErrorCard(provider);
+                            container.appendChild(errorCard);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error loading database stats:", error);
+                    const container =
+                        document.getElementById("db-stats-container");
+                    container.innerHTML =
+                        '<div class="text-center text-red-500">Failed to load database statistics</div>';
+                }
+            }
+
+            function createProviderStatsCard(data, isCurrent) {
+                const card = document.createElement("div");
+                card.className = `border rounded-lg p-6 ${
+                    isCurrent
+                        ? "border-blue-300 bg-blue-50"
+                        : "border-gray-200 bg-white"
+                }`;
+
+                const currentBadge = isCurrent
+                    ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ml-2">Current</span>'
+                    : "";
+
+                const buildDateCity = new Date(
+                    data.databases.city.build_date
+                ).toLocaleString();
+                const buildDateASN = new Date(
+                    data.databases.asn.build_date
+                ).toLocaleString();
+                const lastUpdated = new Date(
+                    data.last_updated
+                ).toLocaleString();
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900">${
+                                data.provider.provider_name
+                            }${currentBadge}</h3>
+                            <a href="${
+                                data.provider.provider_website
+                            }" target="_blank" class="text-sm text-blue-600 hover:underline">
+                                ${data.provider.provider_website}
+                            </a>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-blue-600">${formatNumber(
+                                data.total_records
+                            )}</div>
+                            <div class="text-sm text-gray-500">Total Records</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-2">🏙️ City Database</h4>
+                            <div class="space-y-1 text-sm">
+                                <div><span class="font-medium">Records:</span> ${formatNumber(
+                                    data.databases.city.record_count
+                                )}</div>
+                                <div><span class="font-medium">Build Date:</span> ${buildDateCity}</div>
+                                <div><span class="font-medium">Type:</span> ${
+                                    data.databases.city.database_type
+                                }</div>
+                                <div><span class="font-medium">Version:</span> ${
+                                    data.databases.city
+                                        .binary_format_major_version
+                                }.${
+                    data.databases.city.binary_format_minor_version
+                }</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-2">🌐 ASN Database</h4>
+                            <div class="space-y-1 text-sm">
+                                <div><span class="font-medium">Records:</span> ${formatNumber(
+                                    data.databases.asn.record_count
+                                )}</div>
+                                <div><span class="font-medium">Build Date:</span> ${buildDateASN}</div>
+                                <div><span class="font-medium">Type:</span> ${
+                                    data.databases.asn.database_type
+                                }</div>
+                                <div><span class="font-medium">Version:</span> ${
+                                    data.databases.asn
+                                        .binary_format_major_version
+                                }.${
+                    data.databases.asn.binary_format_minor_version
+                }</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="flex justify-between items-center text-sm text-gray-500">
+                            <span>Last Updated: ${lastUpdated}</span>
+                            <span>API Version: ${data.api_version}</span>
+                        </div>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            function createErrorCard(provider) {
+                const card = document.createElement("div");
+                card.className =
+                    "border border-red-200 rounded-lg p-6 bg-red-50";
+                card.innerHTML = `
+                    <div class="text-center">
+                        <h3 class="text-xl font-semibold text-red-900 mb-2">Provider: ${provider}</h3>
+                        <p class="text-red-600">Failed to load statistics for this provider</p>
+                    </div>
+                `;
+                return card;
+            }
+
+            function formatNumber(num) {
+                return new Intl.NumberFormat().format(num);
+            }
+
+            // Refresh database stats function
+            function refreshDatabaseStats() {
+                const container = document.getElementById("db-stats-container");
+                container.innerHTML = `
+                    <div class="text-center text-gray-500">
+                        <div class="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full" role="status" aria-label="Loading">
+                        </div>
+                        <p class="mt-2">Refreshing database statistics...</p>
+                    </div>
+                `;
+                loadDatabaseStats();
+            }
+        </script>
+    </body>
+</html>
