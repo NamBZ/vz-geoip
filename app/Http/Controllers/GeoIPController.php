@@ -328,6 +328,9 @@ class GeoIPController extends Controller
         // Check Accept header
         $acceptHeader = $request->header('Accept');
         if ($acceptHeader) {
+            if (strpos($acceptHeader, '*/*') !== false || strpos($acceptHeader, 'text/html') !== false) {
+                return 'json';
+            }
             if (strpos($acceptHeader, 'application/xml') !== false || strpos($acceptHeader, 'text/xml') !== false) {
                 return 'xml';
             }
