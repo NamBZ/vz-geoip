@@ -191,27 +191,28 @@ class RateLimitMiddleware
     {
         // Check query parameter first
         $format = $request->query('format');
-        $supportedFormats = ['json', 'xml', 'csv', 'yaml'];
-
-        if ($format && in_array($format, $supportedFormats)) {
+        if ($format && in_array($format, config('geoip.supported_formats'))) {
             return $format;
         }
 
         // Check Accept header
         $acceptHeader = $request->header('Accept');
         if ($acceptHeader) {
-            if (strpos($acceptHeader, 'application/xml') !== false) {
+            if (strpos($acceptHeader, '*/*') !== false || strpos($acceptHeader, 'text/html') !== false) {
+                return 'json';
+            }
+            if (strpos($acceptHeader, 'application/xml') !== false || strpos($acceptHeader, 'text/xml') !== false) {
                 return 'xml';
             }
             if (strpos($acceptHeader, 'text/csv') !== false) {
                 return 'csv';
             }
-            if (strpos($acceptHeader, 'application/x-yaml') !== false) {
+            if (strpos($acceptHeader, 'application/x-yaml') !== false || strpos($acceptHeader, 'text/yaml') !== false) {
                 return 'yaml';
             }
         }
 
-        return 'json';
+        return config('geoip.default_format', 'json');
     }
 
     /**
