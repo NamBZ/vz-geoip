@@ -14,7 +14,10 @@
 */
 
 $router->get('/', function () {
-    return response()->file(app()->basePath('public/index.html'));
+    // Serve the main HTML file with headers
+    return response()->file(app()->basePath('public/index.html'), [
+        'Content-Type' => 'text/html; charset=UTF-8',
+    ]);
 });
 
 // Admin redirect
