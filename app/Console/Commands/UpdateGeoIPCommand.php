@@ -60,13 +60,13 @@ class UpdateGeoIPCommand extends Command
 
             switch ($provider) {
                 case 'maxmind':
-                    $this->updateMaxMind($force, $noBackup);
+                    $this->updateMaxMind2($force, $noBackup);
                     break;
                 case 'dbip':
                     $this->updateDBIP($force, $noBackup);
                     break;
                 case 'all':
-                    $this->updateMaxMind($force, $noBackup);
+                    $this->updateMaxMind2($force, $noBackup);
                     $this->updateDBIP($force, $noBackup);
                     break;
                 default:
@@ -163,6 +163,41 @@ class UpdateGeoIPCommand extends Command
         }
 
         $this->info("✅ MaxMind databases updated successfully");
+    }
+
+    /**
+     * Update MaxMind databases using git.io mirrors
+     */
+    private function updateMaxMind2($force = false, $noBackup = false)
+    {
+        $this->info("🗺️  Updating MaxMind GeoLite2 databases (git.io mirrors)...");
+
+        if (!$noBackup) {
+            $this->backupDatabases('maxmind');
+        }
+
+        $databases = [
+            'GeoLite2-ASN' => 'https://git.io/GeoLite2-ASN.mmdb',
+            'GeoLite2-City' => 'https://git.io/GeoLite2-City.mmdb',
+            'GeoLite2-Country' => 'https://git.io/GeoLite2-Country.mmdb'
+        ];
+
+        foreach ($databases as $database => $url) {
+            $this->info("📥 Downloading {$database}...");
+
+            $destination = storage_path($this->config['storage_dir'] . "/maxmind/{$database}.mmdb");
+
+            try {
+                // Download directly to destination
+                $this->downloadFile($url, $destination);
+                $this->line("  ✓ Updated: {$database}.mmdb");
+            } catch (Exception $e) {
+                $this->error("  ❌ Failed to update {$database}: " . $e->getMessage());
+                throw $e;
+            }
+        }
+
+        $this->info("✅ MaxMind databases updated successfully (git.io mirrors)");
     }
 
     /**
